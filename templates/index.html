@@ -1,0 +1,52 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoramento de Temperatura</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Monitoramento de Temperatura</h1>
+        <h2>Raspberry Pi + Arduino</h2>
+
+        <div class="card">
+            <h3>Temperatura Atual</h3>
+            <p class="temperatura" id="temperatura">-- °C</p>
+            <p id="status">Aguardando dados...</p>
+        </div>
+
+        <p class="status">Sistema de monitoramento</p>
+    </div>
+
+    <script>
+        async function atualizarTemperatura() {
+            try {
+                const resposta = await fetch('/temperatura');
+
+                if (!resposta.ok) {
+                    throw new Error('Erro ao buscar temperatura');
+                }
+
+                const dados = await resposta.json();
+
+                document.getElementById('temperatura').innerText =
+                    dados.temperatura + ' °C';
+
+                document.getElementById('status').innerText =
+                    'Status: ' + dados.status;
+
+            } catch (erro) {
+                document.getElementById('status').innerText =
+                    'Erro ao receber dados';
+            }
+        }
+
+        atualizarTemperatura();
+
+        setInterval(atualizarTemperatura, 3000);
+    </script>
+</body>
+</html>

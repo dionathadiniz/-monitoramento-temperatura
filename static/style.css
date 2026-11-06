@@ -1,0 +1,40 @@
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #eef2f7;
+    margin: 0;
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.container {
+    max-width: 800px;
+    margin: auto;
+}
+
+h1 {
+    color: #173b69;
+}
+
+h2 {
+    color: #526b86;
+}
+
+.card {
+    background: white;
+    padding: 30px;
+    margin-top: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.temperatura {
+    font-size: 48px;
+    font-weight: bold;
+    color: #1677c8;
+}
+
+.status {
+    color: green;
+    margin-top: 25px;
+}
