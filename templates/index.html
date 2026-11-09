@@ -23,6 +23,12 @@
 
     <script>
         async function atualizarTemperatura() {
+            const temperaturaElemento =
+                document.getElementById('temperatura');
+
+            const statusElemento =
+                document.getElementById('status');
+
             try {
                 const resposta = await fetch('/temperatura');
 
@@ -32,15 +38,31 @@
 
                 const dados = await resposta.json();
 
-                document.getElementById('temperatura').innerText =
-                    dados.temperatura + ' °C';
+                if (dados.temperatura === null) {
+                    temperaturaElemento.innerText = '-- °C';
+                } else {
+                    temperaturaElemento.innerText =
+                        dados.temperatura + ' °C';
+                }
 
-                document.getElementById('status').innerText =
-                    'Status: ' + dados.status;
+                if (dados.status === 'real') {
+                    statusElemento.innerText =
+                        'Status: Dados recebidos do Arduino';
+                } else if (dados.status === 'simulado') {
+                    statusElemento.innerText =
+                        'Status: Temperatura simulada';
+                } else if (dados.status === 'erro') {
+                    statusElemento.innerText =
+                        'Status: Erro na leitura do sensor';
+                } else {
+                    statusElemento.innerText =
+                        'Status: Desconhecido';
+                }
 
             } catch (erro) {
-                document.getElementById('status').innerText =
-                    'Erro ao receber dados';
+                temperaturaElemento.innerText = '-- °C';
+                statusElemento.innerText =
+                    'Erro ao receber dados do servidor';
             }
         }
 

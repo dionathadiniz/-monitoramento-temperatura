@@ -21,9 +21,7 @@ def conectar_arduino():
     ultima_tentativa = time.monotonic()
 
     for porta in list_ports.comports():
-        if not porta.device.startswith(
-            ("/dev/ttyACM", "/dev/ttyUSB")
-        ):
+        if not porta.device.startswith(("/dev/ttyACM", "/dev/ttyUSB")):
             continue
 
         try:
@@ -35,6 +33,7 @@ def conectar_arduino():
 
             # Aguarda a inicialização do Arduino
             time.sleep(2)
+            conexao.reset_input_buffer()
 
             return conexao
 
@@ -53,6 +52,14 @@ def ler_temperatura():
         try:
             linha = arduino.readline()
             texto = linha.decode("utf-8").strip()
+
+            # Sensor não conseguiu realizar a leitura
+            if texto == "ERRO" or not texto:
+                return {
+                    "temperatura": None,
+                    "status": "erro"
+                }
+
             temperatura = float(texto)
 
             return {
@@ -60,19 +67,23 @@ def ler_temperatura():
                 "status": "real"
             }
 
-        except (
-            serial.SerialException,
-            ValueError,
-            UnicodeDecodeError
-        ):
+        except (ValueError, UnicodeDecodeError):
+            return {
+                "temperatura": None,
+                "status": "erro"
+            }
+
+        except serial.SerialException:
             if conexao is not None:
-                conexao.close()
+                try:
+                    conexao.close()
+                except serial.SerialException:
+                    pass
+
             conexao = None
 
-    # Simulação enquanto não há dados reais
+    # Simulação quando o Arduino não está conectado
     return {
-        "temperatura": round(
-            random.uniform(20, 30), 1
-        ),
+        "temperatura": round(random.uniform(20, 30), 1),
         "status": "simulado"
     }
