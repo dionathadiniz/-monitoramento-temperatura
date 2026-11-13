@@ -13,221 +13,235 @@
 
 <body>
 
-    <div class="dashboard">
+<div class="layout">
 
-        <!-- CABEÇALHO -->
-        <header class="topbar">
+    <!-- BARRA LATERAL -->
+    <aside class="sidebar">
 
-            <div class="brand">
+        <div class="sidebar-brand">
+            <img
+                src="{{ url_for('static', path='logo-furacao-2000.png') }}"
+                alt="Logo Furação 2000"
+                class="brand-logo"
+            >
+        </div>
 
-                <img
-                    src="{{ url_for('static', path='logo-furacao-2000.png') }}"
-                    alt="Logo Furação 2000"
-                    class="brand-logo"
-                >
+        <nav class="nav">
+            <a href="#painel" class="nav-item active">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></svg>
+                Painel
+            <a href="/historico/csv" class="nav-item">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg>
+                Exportar CSV
+            </a>
+        </nav>
 
-                <div class="brand-description">
-                    <h1>Sistema de Monitoramento</h1>
-                    <span>MONITORAMENTO DE TEMPERATURA EM TEMPO REAL</span>
-                </div>
+        <div class="sidebar-footer">
+            <span>Raspberry Pi · Arduino</span>
+            <span>FastAPI · Redis · SQLite</span>
+            <span>Furação 2000 © 2026</span>
+        </div>
 
+    </aside>
+
+    <!-- CONTEÚDO -->
+    <div class="content">
+
+        <header class="topbar" id="painel">
+
+            <div>
+                <h1>Painel</h1>
+                <span class="topbar-sub">Monitoramento de temperatura em tempo real</span>
             </div>
 
-            <div class="connection">
-                <span class="connection-dot" id="connection-dot"></span>
-                <span id="connection-text">Conectando...</span>
+            <div class="topbar-right">
+
+                <div class="connection">
+                    <span class="connection-dot" id="connection-dot"></span>
+                    <span id="connection-text">Conectando...</span>
+                </div>
+
+                <div class="updated">
+                    <span>Última atualização</span>
+                    <strong id="last-update">--:--:--</strong>
+                </div>
+
             </div>
 
         </header>
 
-        <!-- CONTEÚDO PRINCIPAL -->
         <main>
 
-            <!-- APRESENTAÇÃO -->
-            <section class="welcome">
-
-                <div>
-                    <p class="eyebrow">PAINEL DE CONTROLE</p>
-                    <h2>Monitoramento de temperatura</h2>
-                    <p class="subtitle">
-                        Acompanhe as condições do ambiente em tempo real.
-                    </p>
-                </div>
-
-                <div class="date-box">
-                    <span>ÚLTIMA ATUALIZAÇÃO</span>
-                    <strong id="last-update">--:--:--</strong>
-                </div>
-
-            </section>
-
-            <!-- INDICADORES DE TEMPERATURA -->
-            <section class="main-grid">
+            <!-- INDICADORES -->
+            <section class="stat-grid">
 
                 <!-- TEMPERATURA ATUAL -->
-                <article class="card temperature-card">
+                <article class="card stat-card">
 
-                    <div class="card-heading">
-                        <div>
-                            <span class="card-label">TEMPERATURA ATUAL</span>
-                            <h3>Leitura do sensor</h3>
-                        </div>
-
-                        <span class="thermometer-icon">🌡️</span>
+                    <div class="stat-head">
+                        <span class="card-label">Temperatura atual</span>
+                        <svg class="stat-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 14.8V5a2 2 0 0 0-4 0v9.8a4 4 0 1 0 4 0z"/></svg>
                     </div>
 
-                    <div class="temperature-value">
-                        <span id="temperature">--</span>
+                    <div class="stat-value">
+                        <span class="stat-number" id="temperature">--</span>
                         <span class="unit">°C</span>
                     </div>
 
-                    <div class="temperature-status" id="temperature-status">
-                        Aguardando leitura...
+                    <div class="stat-row">
+                        <span class="temperature-status" id="temperature-status">Aguardando leitura...</span>
                     </div>
 
-                    <div class="temperature-bar">
-                        <div id="temperature-fill"></div>
-                    </div>
-
-                    <div class="bar-labels">
-                        <span>0 °C</span>
-                        <span>50 °C</span>
+                    <div class="meter">
+                        <div class="meter-bar"><div class="meter-fill" id="temperature-fill"></div></div>
+                        <div class="bar-labels"><span>0 °C</span><span>50 °C</span></div>
                     </div>
 
                 </article>
 
                 <!-- TEMPERATURA MÁXIMA -->
-                <article class="card info-card">
+                <article class="card stat-card">
 
-                    <div class="info-icon blue">↗</div>
+                    <div class="stat-head">
+                        <span class="card-label">Temperatura máxima</span>
+                        <svg class="stat-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg>
+                    </div>
 
-                    <span class="card-label">TEMPERATURA MÁXIMA</span>
+                    <div class="stat-value">
+                        <span class="stat-number" id="max-temperature">--</span>
+                        <span class="unit">°C</span>
+                    </div>
 
-                    <strong id="max-temperature">-- °C</strong>
+                    <div class="stat-row">
+                        <span class="stat-note">Maior leitura desta sessão</span>
+                    </div>
 
-                    <span class="info-description">
-                        Maior leitura desta sessão
-                    </span>
+                    <div class="meter">
+                        <div class="meter-bar"><div class="meter-fill" id="max-fill"></div></div>
+                        <div class="bar-labels"><span>0 °C</span><span>50 °C</span></div>
+                    </div>
 
                 </article>
 
                 <!-- TEMPERATURA MÍNIMA -->
-                <article class="card info-card">
+                <article class="card stat-card">
 
-                    <div class="info-icon purple">↘</div>
+                    <div class="stat-head">
+                        <span class="card-label">Temperatura mínima</span>
+                        <svg class="stat-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 9v8H9"/></svg>
+                    </div>
 
-                    <span class="card-label">TEMPERATURA MÍNIMA</span>
+                    <div class="stat-value">
+                        <span class="stat-number" id="min-temperature">--</span>
+                        <span class="unit">°C</span>
+                    </div>
 
-                    <strong id="min-temperature">-- °C</strong>
+                    <div class="stat-row">
+                        <span class="stat-note">Menor leitura desta sessão</span>
+                    </div>
 
-                    <span class="info-description">
-                        Menor leitura desta sessão
-                    </span>
+                    <div class="meter">
+                        <div class="meter-bar"><div class="meter-fill" id="min-fill"></div></div>
+                        <div class="bar-labels"><span>0 °C</span><span>50 °C</span></div>
+                    </div>
 
                 </article>
 
             </section>
 
-            <!-- GRÁFICO DE HISTÓRICO -->
-            <section class="card chart-card">
+            <!-- GRÁFICO + SISTEMA -->
+            <section class="middle-grid" id="grafico">
 
-                <div class="chart-heading">
+                <article class="card chart-card">
 
-                    <div>
-                        <span class="card-label">DADOS EM TEMPO REAL</span>
+                    <div class="card-title-row">
                         <h3>Histórico de temperatura</h3>
+                        <span class="live-label"><span></span> Ao vivo</span>
                     </div>
 
-                    <div class="chart-actions">
-
-                        <a href="/historico/csv" class="export-button">
-                            <span>↓</span> Exportar CSV
-                        </a>
-
-                        <span class="live-label">
-                            <span></span> AO VIVO
-                        </span>
-
+                    <div class="chart-container">
+                        <canvas id="temperature-chart"></canvas>
                     </div>
 
-                </div>
+                    <p class="chart-note">
+                        O gráfico apresenta as últimas 20 leituras. Passe o mouse sobre a linha para ver o valor e a hora.
+                    </p>
 
-                <div class="chart-container">
-                    <canvas id="temperature-chart"></canvas>
-                </div>
+                </article>
 
-                <p class="chart-note">
-                    O gráfico apresenta as últimas 20 leituras recebidas.
-                </p>
+                <article class="card system-card">
+
+                    <h3>Sistema</h3>
+
+                    <ul class="system-list">
+
+                        <li>
+                            <svg class="row-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12a7 7 0 0 1 14 0M8.5 12a3.5 3.5 0 0 1 7 0M12 12v.01M12 16v4"/></svg>
+                            <div>
+                                <span class="card-label">Fonte dos dados</span>
+                                <strong id="sensor-source">Aguardando sensor</strong>
+                                <p id="sensor-description">Verificando comunicação com o Arduino.</p>
+                            </div>
+                        </li>
+
+                        <li>
+                            <svg class="row-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                            <div>
+                                <span class="card-label">Intervalo de leitura</span>
+                                <strong>3 segundos</strong>
+                                <p>Atualização automática dos dados.</p>
+                            </div>
+                        </li>
+
+                        <li>
+                            <svg class="row-icon" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></svg>
+                            <div>
+                                <span class="card-label">Cache Redis</span>
+                                <strong id="cache-source">Aguardando leitura</strong>
+                                <p id="cache-description">Verificando o cache distribuído.</p>
+                            </div>
+                        </li>
+
+                    </ul>
+
+                </article>
 
             </section>
 
-            <!-- INFORMAÇÕES DO SENSOR -->
-                        <section class="bottom-grid">
+            <!-- TABELA -->
+            <section class="card table-card" id="leituras">
 
-                <article class="card sensor-card">
+                <div class="card-title-row">
+                    <h3>Últimas leituras</h3>
+                    <a href="/historico/csv" class="export-button">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg>
+                        Exportar CSV
+                    </a>
+                </div>
 
-                    <div class="sensor-icon">⌁</div>
-
-                    <div>
-                        <span class="card-label">FONTE DOS DADOS</span>
-
-                        <h3 id="sensor-source">
-                            Aguardando sensor
-                        </h3>
-
-                        <p id="sensor-description">
-                            Verificando comunicação com o Arduino.
-                        </p>
-                    </div>
-
-                </article>
-
-                <article class="card sensor-card">
-
-                    <div class="sensor-icon">◷</div>
-
-                    <div>
-                        <span class="card-label">INTERVALO DE LEITURA</span>
-
-                        <h3>3 segundos</h3>
-
-                        <p>
-                            Atualização automática dos dados.
-                        </p>
-                    </div>
-
-                </article>
-
-                <article class="card sensor-card">
-
-                    <div class="sensor-icon">⚡</div>
-
-                    <div>
-                        <span class="card-label">CACHE REDIS</span>
-
-                        <h3 id="cache-source">
-                            Aguardando leitura
-                        </h3>
-
-                        <p id="cache-description">
-                            Verificando o cache distribuído.
-                        </p>
-                    </div>
-
-                </article>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Data e hora</th>
+                                <th>Origem</th>
+                                <th class="num">Temperatura</th>
+                            </tr>
+                        </thead>
+                        <tbody id="readings-body">
+                            <tr><td colspan="4" class="empty">Aguardando leituras...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
 
             </section>
 
         </main>
 
-        <!-- RODAPÉ -->
-        <footer>
-            <span>Furação 2000 © 2026</span>
-            <span>Raspberry Pi · Arduino · FastAPI · Redis · SQLite</span>
-        </footer>
-
     </div>
+
+</div>
 
 </body>
 </html>

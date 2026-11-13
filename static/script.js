@@ -1,4 +1,3 @@
-
 const temperaturaElemento = document.getElementById("temperature");
 const statusElemento = document.getElementById("temperature-status");
 const conexaoElemento = document.getElementById("connection-text");
@@ -15,15 +14,28 @@ const cacheElemento = document.getElementById("cache-source");
 const cacheDescricao = document.getElementById("cache-description");
 
 const preenchimento = document.getElementById("temperature-fill");
+const preenchimentoMax = document.getElementById("max-fill");
+const preenchimentoMin = document.getElementById("min-fill");
+const tabelaCorpo = document.getElementById("readings-body");
 
 const canvas = document.getElementById("temperature-chart");
 const ctx = canvas.getContext("2d");
+
+const FONTE = "'IBM Plex Sans', Arial, sans-serif";
 
 let historico = [];
 let temperaturaMaxima = null;
 let temperaturaMinima = null;
 
+let contadorLeituras = 0;   // identifica cada leitura do gráfico
+let pontosGrafico = [];     // posições dos pontos, usadas no mouse
+let pontoSelecionado = null; // id da leitura sob o mouse
+
 const MAX_LEITURAS = 20;
+
+function percentual(valor) {
+    return Math.max(0, Math.min(100, (valor / 50) * 100));
+}
 
 function atualizarConexao(conectado, mensagem) {
     conexaoElemento.textContent = mensagem;
@@ -56,12 +68,13 @@ function atualizarTemperatura(dados) {
         temperaturaMinima = valor;
     }
 
-    maximaElemento.textContent = `${temperaturaMaxima.toFixed(1)} °C`;
-    minimaElemento.textContent = `${temperaturaMinima.toFixed(1)} °C`;
+    maximaElemento.textContent = temperaturaMaxima.toFixed(1);
+    minimaElemento.textContent = temperaturaMinima.toFixed(1);
 
-    // Atualiza a barra de temperatura (escala visual de 0 a 50 °C)
-    const percentual = Math.max(0, Math.min(100, (valor / 50) * 100));
-    preenchimento.style.width = `${percentual}%`;
+    // Barras (escala visual de 0 a 50 °C)
+    preenchimento.style.width = `${percentual(valor)}%`;
+    preenchimentoMax.style.width = `${percentual(temperaturaMaxima)}%`;
+    preenchimentoMin.style.width = `${percentual(temperaturaMinima)}%`;
 
     // Classificação visual
     if (valor >= 35) {
@@ -75,7 +88,7 @@ function atualizarTemperatura(dados) {
         statusElemento.className = "temperature-status normal";
     }
 
-    // Identifica a origem dos dados
+    // Origem dos dados
     if (dados.status === "real") {
         fonteElemento.textContent = "Arduino conectado";
         descricaoElemento.textContent = "Dados recebidos diretamente do sensor.";
@@ -86,7 +99,8 @@ function atualizarTemperatura(dados) {
         fonteElemento.textContent = "Sensor com erro";
         descricaoElemento.textContent = "Verifique a comunicação com o Arduino.";
     }
-        // Indica se a leitura veio do cache Redis
+
+    // Indica se a leitura veio do cache Redis
     if (dados.cache === true) {
         cacheElemento.textContent = "Servida do cache";
         cacheDescricao.textContent = "Leitura recente reaproveitada do Redis.";
@@ -96,7 +110,10 @@ function atualizarTemperatura(dados) {
     }
 
     // Guarda as últimas 20 leituras
+    contadorLeituras += 1;
+
     historico.push({
+        id: contadorLeituras,
         hora: new Date().toLocaleTimeString("pt-BR"),
         valor: valor
     });
@@ -108,6 +125,53 @@ function atualizarTemperatura(dados) {
     ultimaAtualizacao.textContent = new Date().toLocaleTimeString("pt-BR");
 
     desenharGrafico();
+}
+
+/* ---------- GRÁFICO ---------- */
+
+function caixaArredondada(x, y, largura, altura, raio) {
+    ctx.beginPath();
+    ctx.moveTo(x + raio, y);
+    ctx.arcTo(x + largura, y, x + largura, y + altura, raio);
+    ctx.arcTo(x + largura, y + altura, x, y + altura, raio);
+    ctx.arcTo(x, y + altura, x, y, raio);
+    ctx.arcTo(x, y, x + largura, y, raio);
+    ctx.closePath();
+}
+
+function desenharTooltip(ponto, ehAtual, larguraCanvas) {
+    const linhaSuperior = ehAtual ? `Atual · ${ponto.hora}` : ponto.hora;
+    const linhaInferior = `${ponto.valor.toFixed(1)} °C`;
+
+    ctx.font = `11px ${FONTE}`;
+    const larguraSuperior = ctx.measureText(linhaSuperior).width;
+
+    ctx.font = `600 16px ${FONTE}`;
+    const larguraInferior = ctx.measureText(linhaInferior).width;
+
+    const largura = Math.max(larguraSuperior, larguraInferior) + 24;
+    const altura = 50;
+
+    let x = ponto.x - largura / 2;
+    x = Math.max(4, Math.min(larguraCanvas - largura - 4, x));
+
+    let y = ponto.y - altura - 14;
+    if (y < 4) {
+        y = ponto.y + 14;
+    }
+
+    ctx.fillStyle = "#2a1e22";
+    caixaArredondada(x, y, largura, altura, 8);
+    ctx.fill();
+
+    ctx.textAlign = "left";
+    ctx.fillStyle = "#cdbfc4";
+    ctx.font = `11px ${FONTE}`;
+    ctx.fillText(linhaSuperior, x + 12, y + 19);
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = `600 16px ${FONTE}`;
+    ctx.fillText(linhaInferior, x + 12, y + 39);
 }
 
 function desenharGrafico() {
@@ -135,7 +199,7 @@ function desenharGrafico() {
     const areaAltura = altura - margem.topo - margem.baixo;
 
     // Linhas horizontais do gráfico
-    ctx.strokeStyle = "#293449";
+    ctx.strokeStyle = "#d3cdcf";
     ctx.lineWidth = 1;
 
     for (let i = 0; i <= 4; i++) {
@@ -146,14 +210,16 @@ function desenharGrafico() {
         ctx.lineTo(largura - margem.direita, y);
         ctx.stroke();
 
-        ctx.fillStyle = "#8793a8";
-        ctx.font = "11px Arial";
+        ctx.fillStyle = "#6b5f63";
+        ctx.font = `11px ${FONTE}`;
+        ctx.textAlign = "left";
         ctx.fillText(`${50 - i * 12.5}°`, 2, y + 4);
     }
 
     if (historico.length === 0) {
-        ctx.fillStyle = "#8793a8";
-        ctx.font = "14px Arial";
+        pontosGrafico = [];
+        ctx.fillStyle = "#6b5f63";
+        ctx.font = `14px ${FONTE}`;
         ctx.textAlign = "center";
         ctx.fillText("Aguardando dados...", largura / 2, altura / 2);
         ctx.textAlign = "left";
@@ -170,8 +236,10 @@ function desenharGrafico() {
         const y = margem.topo + areaAltura -
             (valorLimitado / 50) * areaAltura;
 
-        return { x, y };
+        return { x, y, id: item.id, hora: item.hora, valor: item.valor };
     });
+
+    pontosGrafico = pontos;
 
     // Área preenchida abaixo da linha
     ctx.beginPath();
@@ -185,8 +253,8 @@ function desenharGrafico() {
     ctx.closePath();
 
     const gradiente = ctx.createLinearGradient(0, margem.topo, 0, altura);
-    gradiente.addColorStop(0, "rgba(40, 150, 255, 0.30)");
-    gradiente.addColorStop(1, "rgba(40, 150, 255, 0.01)");
+    gradiente.addColorStop(0, "rgba(200, 32, 47, 0.22)");
+    gradiente.addColorStop(1, "rgba(200, 32, 47, 0.02)");
 
     ctx.fillStyle = gradiente;
     ctx.fill();
@@ -202,8 +270,8 @@ function desenharGrafico() {
         }
     });
 
-    ctx.strokeStyle = "#39a5ff";
-    ctx.lineWidth = 3;
+    ctx.strokeStyle = "#c8202f";
+    ctx.lineWidth = 2.5;
     ctx.lineJoin = "round";
     ctx.lineCap = "round";
     ctx.stroke();
@@ -213,15 +281,142 @@ function desenharGrafico() {
 
     ctx.beginPath();
     ctx.arc(ultimo.x, ultimo.y, 5, 0, Math.PI * 2);
-    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle = "#c8202f";
     ctx.fill();
 
     ctx.beginPath();
     ctx.arc(ultimo.x, ultimo.y, 9, 0, Math.PI * 2);
-    ctx.strokeStyle = "#39a5ff";
+    ctx.strokeStyle = "rgba(200, 32, 47, 0.35)";
     ctx.lineWidth = 2;
     ctx.stroke();
+
+    // Ponto sob o mouse: guia, destaque e caixa com valor e hora
+    const selecionado = pontos.find(p => p.id === pontoSelecionado);
+
+    if (selecionado) {
+        ctx.beginPath();
+        ctx.setLineDash([4, 4]);
+        ctx.moveTo(selecionado.x, margem.topo);
+        ctx.lineTo(selecionado.x, margem.topo + areaAltura);
+        ctx.strokeStyle = "rgba(35, 26, 29, 0.3)";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.beginPath();
+        ctx.arc(selecionado.x, selecionado.y, 6, 0, Math.PI * 2);
+        ctx.fillStyle = "#c8202f";
+        ctx.fill();
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        desenharTooltip(selecionado, selecionado.id === ultimo.id, largura);
+    }
 }
+
+function encontrarPontoProximo(mx, my) {
+    if (pontosGrafico.length === 0) return null;
+
+    // Ponto mais próximo na horizontal
+    let maisProximo = pontosGrafico[0];
+    for (const ponto of pontosGrafico) {
+        if (Math.abs(ponto.x - mx) < Math.abs(maisProximo.x - mx)) {
+            maisProximo = ponto;
+        }
+    }
+
+    // Sobre a bolinha de um ponto
+    const distancia = Math.hypot(maisProximo.x - mx, maisProximo.y - my);
+    if (distancia <= 14) return maisProximo;
+
+    // Sobre a linha entre dois pontos
+    for (let i = 0; i < pontosGrafico.length - 1; i++) {
+        const a = pontosGrafico[i];
+        const b = pontosGrafico[i + 1];
+
+        if (mx >= a.x && mx <= b.x) {
+            const t = (mx - a.x) / (b.x - a.x);
+            const yLinha = a.y + (b.y - a.y) * t;
+
+            if (Math.abs(my - yLinha) <= 14) return maisProximo;
+        }
+    }
+
+    return null;
+}
+
+canvas.addEventListener("pointermove", evento => {
+    const area = canvas.getBoundingClientRect();
+    const mx = evento.clientX - area.left;
+    const my = evento.clientY - area.top;
+
+    const ponto = encontrarPontoProximo(mx, my);
+    const novoId = ponto ? ponto.id : null;
+
+    if (novoId !== pontoSelecionado) {
+        pontoSelecionado = novoId;
+        canvas.style.cursor = ponto ? "pointer" : "default";
+        desenharGrafico();
+    }
+});
+
+canvas.addEventListener("pointerleave", () => {
+    if (pontoSelecionado !== null) {
+        pontoSelecionado = null;
+        canvas.style.cursor = "default";
+        desenharGrafico();
+    }
+});
+
+/* ---------- TABELA ---------- */
+
+function criarCelula(texto, classe) {
+    const td = document.createElement("td");
+    td.textContent = texto;
+    if (classe) td.className = classe;
+    return td;
+}
+
+async function carregarTabela() {
+    try {
+        const resposta = await fetch("/historico");
+        if (!resposta.ok) return;
+
+        const dados = await resposta.json();
+
+        const ultimas = [...dados.leituras]
+            .sort((a, b) => b.id - a.id)
+            .slice(0, 6);
+
+        if (ultimas.length === 0) return;
+
+        tabelaCorpo.replaceChildren();
+
+        ultimas.forEach(leitura => {
+            const data = new Date(leitura.data_hora);
+            const dataTexto = isNaN(data)
+                ? leitura.data_hora
+                : data.toLocaleString("pt-BR");
+
+            const origem = leitura.status === "real" ? "Arduino" : "Simulado";
+
+            const linha = document.createElement("tr");
+            linha.appendChild(criarCelula(leitura.id));
+            linha.appendChild(criarCelula(dataTexto));
+            linha.appendChild(criarCelula(origem));
+            linha.appendChild(
+                criarCelula(`${Number(leitura.temperatura).toFixed(1)} °C`, "num")
+            );
+
+            tabelaCorpo.appendChild(linha);
+        });
+    } catch (erro) {
+        console.error("Erro ao carregar a tabela:", erro);
+    }
+}
+
+/* ---------- COMUNICAÇÃO COM O SERVIDOR ---------- */
 
 async function buscarTemperatura() {
     try {
@@ -238,6 +433,7 @@ async function buscarTemperatura() {
         }
 
         atualizarTemperatura(dados);
+        carregarTabela();
 
         if (dados.status === "real") {
             atualizarConexao(true, "Arduino conectado");
