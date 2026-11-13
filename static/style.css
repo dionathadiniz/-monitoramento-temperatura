@@ -1,40 +1,524 @@
 
-body {
-    font-family: Arial, sans-serif;
-    background-color: #eef2f7;
-    margin: 0;
-    padding: 40px 20px;
-    text-align: center;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+    --background: #0b1120;
+    --surface: #141e30;
+    --surface-light: #1b2940;
+    --border: #26354c;
+    --text: #f1f5fb;
+    --muted: #8c9bb2;
+    --blue: #39a5ff;
+    --green: #25d69a;
+    --red: #ff647c;
+    --yellow: #ffbd59;
 }
 
-.container {
-    max-width: 800px;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', Arial, sans-serif;
+    background: var(--background);
+    color: var(--text);
+    min-height: 100vh;
+}
+
+.dashboard {
+    width: min(1200px, 92%);
     margin: auto;
 }
 
-h1 {
-    color: #173b69;
+/* CABEÇALHO */
+
+.topbar {
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    border-bottom: 1px solid var(--border);
 }
 
-h2 {
-    color: #526b86;
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.brand-logo {
+    width: 180px;
+    height: 100px;
+    object-fit: contain;
+    object-position: center;
+    display: block;
+    flex-shrink: 0;
+}
+
+.brand-description h1 {
+    margin-bottom: 8px;
+    font-size: 25px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.brand-description span {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+}
+
+.connection {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: var(--muted);
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.connection-dot,
+.live-label span {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--yellow);
+}
+
+.connection-dot.online {
+    background: var(--green);
+    box-shadow: 0 0 10px rgba(37, 214, 154, 0.5);
+}
+
+.connection-dot.offline {
+    background: var(--red);
+}
+
+/* APRESENTAÇÃO */
+
+.welcome {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding: 42px 0 30px;
+}
+
+.eyebrow,
+.card-label {
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+}
+
+.welcome h2 {
+    font-size: clamp(23px, 4vw, 30px);
+    margin: 10px 0;
+}
+
+.subtitle {
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.date-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 15px 20px;
+    min-width: 175px;
+}
+
+.date-box span {
+    display: block;
+    color: var(--muted);
+    font-size: 9px;
+    margin-bottom: 8px;
+}
+
+.date-box strong {
+    font-size: 17px;
+}
+
+/* CARDS */
+
+.main-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 18px;
 }
 
 .card {
-    background: white;
-    padding: 30px;
-    margin-top: 30px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
 }
 
-.temperatura {
-    font-size: 48px;
-    font-weight: bold;
-    color: #1677c8;
+.temperature-card {
+    background: linear-gradient(145deg, #172b46, #141e30 75%);
+    border-color: #294565;
 }
 
-.status {
-    color: green;
+.card-heading,
+.chart-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card h3 {
+    font-size: 15px;
+    margin-top: 8px;
+}
+
+.thermometer-icon {
+    font-size: 25px;
+}
+
+.temperature-value {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin: 25px 0 10px;
+}
+
+.temperature-value #temperature {
+    font-size: clamp(48px, 7vw, 68px);
+    font-weight: 800;
+    letter-spacing: -4px;
+}
+
+.unit {
+    font-size: 25px;
+    color: var(--blue);
+}
+
+.temperature-status {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 7px 11px;
+    border-radius: 20px;
+    background: rgba(37, 214, 154, 0.12);
+    color: var(--green);
+}
+
+.temperature-status.warning {
+    color: var(--yellow);
+    background: rgba(255, 189, 89, 0.12);
+}
+
+.temperature-status.hot {
+    color: var(--red);
+    background: rgba(255, 100, 124, 0.12);
+}
+
+.temperature-status.normal {
+    color: var(--green);
+    background: rgba(37, 214, 154, 0.12);
+}
+
+.temperature-bar {
+    height: 7px;
+    background: #293a51;
+    border-radius: 10px;
+    overflow: hidden;
     margin-top: 25px;
+}
+
+#temperature-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 10px;
+    background: linear-gradient(90deg, #2588ed, #42c5ff);
+    transition: width 0.5s ease;
+}
+
+.bar-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 7px;
+    color: var(--muted);
+    font-size: 10px;
+}
+
+.info-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 15px;
+}
+
+.info-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    font-size: 23px;
+}
+
+.info-icon.blue {
+    background: rgba(57, 165, 255, 0.13);
+    color: var(--blue);
+}
+
+.info-icon.purple {
+    background: rgba(166, 124, 255, 0.13);
+    color: #ad91ff;
+}
+
+.info-card strong {
+    font-size: 28px;
+}
+
+.info-description {
+    font-size: 11px;
+    color: var(--muted);
+}
+
+/* GRÁFICO */
+
+.chart-card {
+    margin-top: 20px;
+}
+
+.chart-heading h3 {
+    margin-top: 8px;
+}
+
+.chart-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.export-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 13px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    color: var(--text);
+    text-decoration: none;
+    font-size: 11px;
+    font-weight: 600;
+    transition: 0.2s;
+}
+
+.export-button:hover {
+    background: var(--surface-light);
+    border-color: var(--blue);
+    color: var(--blue);
+}
+
+.export-button span {
+    font-size: 16px;
+}
+
+.live-label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--green);
+}
+
+.live-label span {
+    background: var(--green);
+    width: 7px;
+    height: 7px;
+}
+
+.chart-container {
+    width: 100%;
+    height: 250px;
+    margin-top: 25px;
+}
+
+#temperature-chart {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.chart-note {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 12px;
+}
+
+/* INFORMAÇÕES INFERIORES */
+
+.bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-top: 20px;
+}
+
+.sensor-card {
+    display: flex;
+    align-items: center;
+    gap: 17px;
+}
+
+.sensor-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 11px;
+    background: rgba(57, 165, 255, 0.12);
+    color: var(--blue);
+    display: grid;
+    place-items: center;
+    font-size: 27px;
+    flex-shrink: 0;
+}
+
+.sensor-card h3 {
+    font-size: 14px;
+    margin: 7px 0;
+}
+
+.sensor-card p {
+    color: var(--muted);
+    font-size: 11px;
+}
+
+/* RODAPÉ */
+
+footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 28px 0;
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: 10px;
+}
+
+/* TABLETS */
+
+@media (max-width: 900px) {
+    .main-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .temperature-card {
+        grid-column: 1 / -1;
+    }
+
+    .bottom-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* TELAS MENORES */
+
+@media (max-width: 768px) {
+    .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 18px 0;
+        gap: 15px;
+    }
+
+    .brand {
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .brand-logo {
+        width: 130px;
+        height: 75px;
+    }
+
+    .brand-description h1 {
+        font-size: 20px;
+    }
+
+    .brand-description span {
+        font-size: 9px;
+    }
+
+    .connection {
+        align-self: flex-start;
+    }
+
+    .welcome {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 18px;
+    }
+
+    .date-box {
+        width: 100%;
+    }
+
+    .chart-heading {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .chart-actions {
+        flex-wrap: wrap;
+    }
+}
+
+/* CELULARES */
+
+@media (max-width: 600px) {
+    .dashboard {
+        width: 92%;
+    }
+
+    .brand {
+        gap: 12px;
+    }
+
+    .brand-logo {
+        width: 110px;
+        height: 65px;
+    }
+
+    .brand-description h1 {
+        font-size: 16px;
+    }
+
+    .brand-description span {
+        font-size: 8px;
+        letter-spacing: 1px;
+    }
+
+    .main-grid,
+    .bottom-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .temperature-card {
+        grid-column: auto;
+    }
+
+    .card {
+        padding: 19px;
+    }
+
+    .chart-container {
+        height: 220px;
+        overflow: hidden;
+    }
+
+    footer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
 }

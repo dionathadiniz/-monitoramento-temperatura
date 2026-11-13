@@ -1,74 +1,233 @@
-
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitoramento de Temperatura</title>
-    <link rel="stylesheet" href="/static/style.css">
+
+    <title>Furação 2000 | Monitoramento</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
+    <script src="{{ url_for('static', path='script.js') }}" defer></script>
 </head>
+
 <body>
-    <div class="container">
-        <h1>Monitoramento de Temperatura</h1>
-        <h2>Raspberry Pi + Arduino</h2>
 
-        <div class="card">
-            <h3>Temperatura Atual</h3>
-            <p class="temperatura" id="temperatura">-- °C</p>
-            <p id="status">Aguardando dados...</p>
-        </div>
+    <div class="dashboard">
 
-        <p class="status">Sistema de monitoramento</p>
+        <!-- CABEÇALHO -->
+        <header class="topbar">
+
+            <div class="brand">
+
+                <img
+                    src="{{ url_for('static', path='logo-furacao-2000.png') }}"
+                    alt="Logo Furação 2000"
+                    class="brand-logo"
+                >
+
+                <div class="brand-description">
+                    <h1>Sistema de Monitoramento</h1>
+                    <span>MONITORAMENTO DE TEMPERATURA EM TEMPO REAL</span>
+                </div>
+
+            </div>
+
+            <div class="connection">
+                <span class="connection-dot" id="connection-dot"></span>
+                <span id="connection-text">Conectando...</span>
+            </div>
+
+        </header>
+
+        <!-- CONTEÚDO PRINCIPAL -->
+        <main>
+
+            <!-- APRESENTAÇÃO -->
+            <section class="welcome">
+
+                <div>
+                    <p class="eyebrow">PAINEL DE CONTROLE</p>
+                    <h2>Monitoramento de temperatura</h2>
+                    <p class="subtitle">
+                        Acompanhe as condições do ambiente em tempo real.
+                    </p>
+                </div>
+
+                <div class="date-box">
+                    <span>ÚLTIMA ATUALIZAÇÃO</span>
+                    <strong id="last-update">--:--:--</strong>
+                </div>
+
+            </section>
+
+            <!-- INDICADORES DE TEMPERATURA -->
+            <section class="main-grid">
+
+                <!-- TEMPERATURA ATUAL -->
+                <article class="card temperature-card">
+
+                    <div class="card-heading">
+                        <div>
+                            <span class="card-label">TEMPERATURA ATUAL</span>
+                            <h3>Leitura do sensor</h3>
+                        </div>
+
+                        <span class="thermometer-icon">🌡️</span>
+                    </div>
+
+                    <div class="temperature-value">
+                        <span id="temperature">--</span>
+                        <span class="unit">°C</span>
+                    </div>
+
+                    <div class="temperature-status" id="temperature-status">
+                        Aguardando leitura...
+                    </div>
+
+                    <div class="temperature-bar">
+                        <div id="temperature-fill"></div>
+                    </div>
+
+                    <div class="bar-labels">
+                        <span>0 °C</span>
+                        <span>50 °C</span>
+                    </div>
+
+                </article>
+
+                <!-- TEMPERATURA MÁXIMA -->
+                <article class="card info-card">
+
+                    <div class="info-icon blue">↗</div>
+
+                    <span class="card-label">TEMPERATURA MÁXIMA</span>
+
+                    <strong id="max-temperature">-- °C</strong>
+
+                    <span class="info-description">
+                        Maior leitura desta sessão
+                    </span>
+
+                </article>
+
+                <!-- TEMPERATURA MÍNIMA -->
+                <article class="card info-card">
+
+                    <div class="info-icon purple">↘</div>
+
+                    <span class="card-label">TEMPERATURA MÍNIMA</span>
+
+                    <strong id="min-temperature">-- °C</strong>
+
+                    <span class="info-description">
+                        Menor leitura desta sessão
+                    </span>
+
+                </article>
+
+            </section>
+
+            <!-- GRÁFICO DE HISTÓRICO -->
+            <section class="card chart-card">
+
+                <div class="chart-heading">
+
+                    <div>
+                        <span class="card-label">DADOS EM TEMPO REAL</span>
+                        <h3>Histórico de temperatura</h3>
+                    </div>
+
+                    <div class="chart-actions">
+
+                        <a href="/historico/csv" class="export-button">
+                            <span>↓</span> Exportar CSV
+                        </a>
+
+                        <span class="live-label">
+                            <span></span> AO VIVO
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="temperature-chart"></canvas>
+                </div>
+
+                <p class="chart-note">
+                    O gráfico apresenta as últimas 20 leituras recebidas.
+                </p>
+
+            </section>
+
+            <!-- INFORMAÇÕES DO SENSOR -->
+            <section class="bottom-grid">
+
+                <article class="card sensor-card">
+
+                    <div class="sensor-icon">⌁</div>
+
+                    <div>
+                        <span class="card-label">FONTE DOS DADOS</span>
+
+                        <h3 id="sensor-source">
+                            Aguardando sensor
+                        </h3>
+
+                        <p id="sensor-description">
+                            Verificando comunicação com o Arduino.
+                        </p>
+                    </div>
+
+                </article>
+
+                <article class="card sensor-card">
+
+                    <div class="sensor-icon">◷</div>
+
+                    <div>
+                        <span class="card-label">INTERVALO DE LEITURA</span>
+
+                                        <article class="card sensor-card">
+
+                    <div class="sensor-icon">⚡</div>
+
+                    <div>
+                        <span class="card-label">CACHE REDIS</span>
+
+                        <h3 id="cache-source">
+                            Aguardando leitura
+                        </h3>
+
+                        <p id="cache-description">
+                            Verificando o cache distribuído.
+                        </p>
+                    </div>
+
+                </article>
+
+                        <h3>3 segundos</h3>
+
+                        <p>
+                            Atualização automática dos dados.
+                        </p>
+                    </div>
+
+                </article>
+
+            </section>
+
+        </main>
+
+        <!-- RODAPÉ -->
+        <footer>
+            <span>Furação 2000 © 2026</span>
+            <span>Raspberry Pi · Arduino · FastAPI · Redis · SQLite</span>
+        </footer>
+
     </div>
 
-    <script>
-        async function atualizarTemperatura() {
-            const temperaturaElemento =
-                document.getElementById('temperatura');
-
-            const statusElemento =
-                document.getElementById('status');
-
-            try {
-                const resposta = await fetch('/temperatura');
-
-                if (!resposta.ok) {
-                    throw new Error('Erro ao buscar temperatura');
-                }
-
-                const dados = await resposta.json();
-
-                if (dados.temperatura === null) {
-                    temperaturaElemento.innerText = '-- °C';
-                } else {
-                    temperaturaElemento.innerText =
-                        dados.temperatura + ' °C';
-                }
-
-                if (dados.status === 'real') {
-                    statusElemento.innerText =
-                        'Status: Dados recebidos do Arduino';
-                } else if (dados.status === 'simulado') {
-                    statusElemento.innerText =
-                        'Status: Temperatura simulada';
-                } else if (dados.status === 'erro') {
-                    statusElemento.innerText =
-                        'Status: Erro na leitura do sensor';
-                } else {
-                    statusElemento.innerText =
-                        'Status: Desconhecido';
-                }
-
-            } catch (erro) {
-                temperaturaElemento.innerText = '-- °C';
-                statusElemento.innerText =
-                    'Erro ao receber dados do servidor';
-            }
-        }
-
-        atualizarTemperatura();
-
-        setInterval(atualizarTemperatura, 3000);
-    </script>
 </body>
 </html>
